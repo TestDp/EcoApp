@@ -1,0 +1,22 @@
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>      
+    <ion-title>{{usuario.name}}</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+  <ion-list>
+    <button ion-item *ngFor="let item of ListaEventos" (click)="LeerQR($event, item)">
+      <ion-icon [name]="item.icon" item-start></ion-icon>      
+      <div class="item-note" item-end>
+        {{item.Nombre_Evento}}
+      </div>
+       
+    </button>
+  </ion-list>
+
+ <!-- <button ion-button secondary menuToggle>Toggle Menu</button>-->
+</ion-content>
