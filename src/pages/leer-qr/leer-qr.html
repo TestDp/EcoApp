@@ -12,28 +12,14 @@
 
 
 <ion-content padding>
-  <ion-row>
-    <ion-col col-12>
-      <ion-item>
-        <ion-label>Evento:{{Evento.Nombre_Evento}} </ion-label>
-      </ion-item>
-    </ion-col>
-  </ion-row>
-  <ion-row>
-    <ion-col col-12>
-      <ion-item>
-        <ion-label>Lugar:{{Evento.Lugar_Evento }} </ion-label>
-      </ion-item>
-    </ion-col>
-  </ion-row>
-  <ion-row>
-    <ion-col col-12>
-      <ion-item>
-        <ion-label>fecha:{{Evento.Fecha_Evento }} </ion-label>
-      </ion-item>
-    </ion-col>
-  </ion-row>
-  <ion-grid *ngIf="usuarioAsistente">
+   <ion-card>
+    <img src="assets/imgs/FlyerEvento_LOVERS FESTIVAL 2018.jpg"/>  
+      <ion-card-title>
+      {{Evento.Nombre_Evento}}
+      </ion-card-title>
+    <div class="card-subtitle">Lugar:{{Evento.Lugar_Evento }}</div>
+    <div class="card-subtitle">fecha:{{Evento.Fecha_Evento }}</div>
+    <ion-grid *ngIf="usuarioAsistente">
     <ion-row>
       <ion-col col-12>
         <ion-item>
@@ -73,6 +59,68 @@
       </ion-col>
     </ion-row>
   </ion-grid>
+  </ion-card>
+  <!-- <ion-row>
+    <ion-col col-12>
+      <ion-item>
+        <ion-label>Evento:{{Evento.Nombre_Evento}} </ion-label>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col col-12>
+      <ion-item>
+        <ion-label>Lugar:{{Evento.Lugar_Evento }} </ion-label>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col col-12>
+      <ion-item>
+        <ion-label>fecha:{{Evento.Fecha_Evento }} </ion-label>
+      </ion-item>
+    </ion-col>
+  </ion-row> -->
+  <!-- <ion-grid *ngIf="usuarioAsistente">
+    <ion-row>
+      <ion-col col-12>
+        <ion-item>
+          <ion-label>Nombre: {{usuarioAsistente.Nombres}} </ion-label>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col col-12>
+        <ion-item>
+          <ion-label>Apellidos: {{usuarioAsistente.Apellidos}} </ion-label>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col col-12>
+        <ion-item>
+          <ion-label>Identificación: {{usuarioAsistente.Identificacion}} </ion-label>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col col-12>
+        <ion-item>
+          <ion-label>Estado: {{estadoUsuario}}</ion-label>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <button ion-button (click)="ActivarQR(Evento.id,usuarioAsistente.id)">Activar QR</button>
+  </ion-grid>
+  <ion-grid *ngIf="!usuarioAsistente && estadoUsuario">
+    <ion-row>
+      <ion-col col-12>
+        <ion-item>
+          <ion-label>{{estadoUsuario}}</ion-label>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid> -->
 </ion-content>
 
 <ion-footer no-border>
