@@ -13,7 +13,7 @@ export class HomePage {
   icons: string[];
   items: Array<{ title: string, note: string, icon: string, fechaEvento: string }>;
   usuario;
-  ListaEventos: Array<{ id: string, Nombre_Evento: string, Lugar_Evento: string, icon: string, Fecha_Evento: string }>;
+  ListaEventos: Array<{ id: string, Nombre_Evento: string, Lugar_Evento: string, icon: string, Fecha_Evento: string,UrlflayerEvento:string }>;
   constructor(public navCtrl: NavController,
               public navParams: NavParams,
               public ecoticketsService: EcoticketsServiceProvider,
@@ -41,7 +41,8 @@ export class HomePage {
                 Nombre_Evento: element.Nombre_Evento,
                 Lugar_Evento: element.Lugar_Evento,
                 icon: 'people',
-                Fecha_Evento: element.Fecha_Evento
+                Fecha_Evento: element.Fecha_Evento,
+                UrlflayerEvento:'http://ecotickets.co/storage/FlyerDeEventos/'+ element.FlyerEvento
               });
             });
 
