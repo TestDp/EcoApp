@@ -7,7 +7,7 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>Usuarios Ingresados</ion-title>
+    <ion-title>Usuarios</ion-title>
   </ion-navbar>
   <ion-toolbar no-border-top>
     <ion-segment [(ngModel)]="Usuarios">
@@ -23,16 +23,22 @@
 <ion-content>
   <div [ngSwitch]="Usuarios">
     <ion-list *ngSwitchCase="'UsuariosRegistrados'">
-      <ion-searchbar></ion-searchbar>   
-      <ion-item *ngFor="let asistente of ListaAsistentes.usuariosRegistrados">
-        <ion-label>{{asistente.Identificacion}} {{asistente.Nombres}} {{asistente.Apellidos}}</ion-label>
-      </ion-item>  
+      <ion-searchbar (ionInput)="getUsuariosRegistrados($event)"></ion-searchbar>
+      <ion-grid>
+        <ion-row *ngFor="let asistente of ListaAsistentes.usuariosRegistrados"> 
+          <ion-col col-4>{{asistente.Identificacion}}</ion-col>
+          <ion-col col-8>{{asistente.Nombres}} {{asistente.Apellidos}}</ion-col>
+        </ion-row>        
+      </ion-grid>     
     </ion-list>
     <ion-list *ngSwitchCase="'Asistentes'">
-      <ion-searchbar></ion-searchbar>
-      <ion-item *ngFor="let asistente of ListaAsistentes.Asistentes">
-        <ion-label>{{asistente.Identificacion}} {{asistente.Nombres}} {{asistente.Apellidos}}</ion-label>
-      </ion-item>
+      <ion-searchbar (ionInput)="getAsistentes($event)"></ion-searchbar>
+       <ion-grid>
+        <ion-row *ngFor="let asistente of ListaAsistentes.Asistentes"> 
+          <ion-col col-4>{{asistente.Identificacion}}</ion-col>
+          <ion-col col-8>{{asistente.Nombres}} {{asistente.Apellidos}}</ion-col>
+        </ion-row>        
+      </ion-grid> 
     </ion-list>
   </div>
 </ion-content>
