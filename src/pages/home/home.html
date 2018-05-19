@@ -3,14 +3,14 @@
     <button ion-button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>      
-    <ion-title style="background-image: url('assets/images/favicon.png') !important; background-repeat: no-repeat; background-position-x: 30%;
+    <ion-title style="background-image: url('assets/imgs/favicon.png') !important; background-repeat: no-repeat; background-position-x: 30%;
     background-position-y: 8px; background-size: 25px;">{{usuario.name}}</ion-title>
   </ion-navbar>
 </ion-header>
 
 <ion-content padding>
 <ion-col col-12>
-	<ion-img width="170" height="75"  style="background-color:#fff; margin-left:20%;" src="assets/images/logo.png"></ion-img>
+	<ion-img width="170" height="75"  style="background-color:#fff; margin-left:20%;" src="assets/imgs/logo.png"></ion-img>
 	 </ion-col>
   <ion-list>
     <button ion-item *ngFor="let item of ListaEventos" (click)="LeerQR($event, item)">
