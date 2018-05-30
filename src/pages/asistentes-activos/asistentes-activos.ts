@@ -18,6 +18,7 @@ export class AsistentesActivosPage {
   Evento;
   ListaAsistentes;
   ListaAsistentesFiltro;
+  indexInfiniteScroll = 10;
   constructor(public navCtrl: NavController,
     public navParams: NavParams,
     public ecoticketsService: EcoticketsServiceProvider,
@@ -34,7 +35,8 @@ export class AsistentesActivosPage {
       this.ecoticketsService.AsistentesActivos(this.Evento.id).subscribe(
         (data: any) => { // Success
           this.ListaAsistentes = JSON.parse(data._body);
-          this.ListaAsistentesFiltro = JSON.parse(data._body);
+          this.ListaAsistentes.usuariosRegistrados = this.ListaAsistentes.usuariosRegistrados.slice(0, this.indexInfiniteScroll);
+          this.ListaAsistentesFiltro = JSON.parse(data._body);         
           loaderAsistentes.dismiss();
         },
         (error) => {
@@ -53,7 +55,11 @@ export class AsistentesActivosPage {
     if (val && val.trim() != '') {
       this.ListaAsistentes.usuariosRegistrados = this.ListaAsistentes.usuariosRegistrados.filter((item) => {
         return (item.Nombres.toLowerCase().indexOf(val.toLowerCase()) > -1);
-      })
+      });
+    } 
+    else {
+      this.indexInfiniteScroll = 10;
+      this.ListaAsistentes.usuariosRegistrados = this.ListaAsistentesFiltro.usuariosRegistrados.slice(0, this.indexInfiniteScroll);
     }
   }
 
@@ -69,4 +75,57 @@ export class AsistentesActivosPage {
     }
   }
 
+  ActivarODesactivarUsuario(Asistente) {
+    if (Asistente.esActivo)
+      this.DesactivarUsuario(Asistente);
+    else
+      this.ActivarUsuario(Asistente);
+  }
+
+  ActivarUsuario(Asistente) {
+    this.ecoticketsService.ActivarQRUsuario(this.Evento.id, Asistente.id).subscribe(
+      (data: any) => { // Success
+        Asistente.esActivo = true;
+        this.ListaAsistentes.Asistentes.push(Asistente);
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+  }
+
+  DesactivarUsuario(Asistente) {
+    this.ecoticketsService.DesactivarQRUsuario(this.Evento.id, Asistente.id).subscribe(
+      (data: any) => { // Success
+        Asistente.esActivo = false;
+        var i = 0;
+        var index = 0;
+        this.ListaAsistentes.Asistentes.forEach(function (asistenteArray) {
+          if (asistenteArray.id == Asistente.id) {
+            index = i;
+          }
+          i++;
+        });
+        this.ListaAsistentes.Asistentes.splice(index, 1);
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+  }
+
+  doInfinite(infiniteScroll) {
+    console.log('Begin async operation');
+
+    setTimeout(() => {
+      for (let i = 0; i < 30; i++) {
+        this.ListaAsistentes.usuariosRegistrados.push(this.ListaAsistentesFiltro.usuariosRegistrados[this.indexInfiniteScroll]);
+        this.indexInfiniteScroll++;
+      }
+
+      console.log('Async operation has ended');
+      infiniteScroll.complete();
+    }, 500);
+  }
+  
 }

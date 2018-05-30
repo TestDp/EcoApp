@@ -10,7 +10,8 @@ import { Http, Headers, RequestOptions } from '@angular/http';
 */
 @Injectable()
 export class EcoticketsServiceProvider {
-  url:string = 'http://pruebas.ecotickets.co';
+  //url:string = 'http://pruebas.ecotickets.co';
+  url:string = 'http://ecotickets.co';
   constructor(public http: Http) {
     console.log('Hello EcoticketsServiceProvider Provider');
   }
@@ -54,6 +55,20 @@ export class EcoticketsServiceProvider {
     let headers = new Headers({'Content-Type': 'application/json','Access-Control-Allow-Origin' : '*', 'Access-Control-Allow-Methods':'POST, GET, OPTIONS, PUT' });
     let options = new RequestOptions({ headers: headers });
     return this.http.get(this.url+'/ActivarQRApp/'+idEvento+'/'+idAsistente,options);
+  }
+
+  DesactivarQRUsuario(idEvento,idAsistente)
+  {
+    let headers = new Headers({'Content-Type': 'application/json','Access-Control-Allow-Origin' : '*', 'Access-Control-Allow-Methods':'POST, GET, OPTIONS, PUT' });
+    let options = new RequestOptions({ headers: headers });
+    return this.http.get(this.url+'/DesactivarQRApp/'+idEvento+'/'+idAsistente,options);
+  }
+
+  ValidarYActivarQR(idEvento,cc)
+  {
+    let headers = new Headers({'Content-Type': 'application/json','Access-Control-Allow-Origin' : '*', 'Access-Control-Allow-Methods':'POST, GET, OPTIONS, PUT' });
+    let options = new RequestOptions({ headers: headers });
+    return this.http.get(this.url+'/ValidarYActivarQR/'+idEvento+'/'+cc,options);
   }
 
   CantidadAsistentesEsperadosRegistrados(idEvento)

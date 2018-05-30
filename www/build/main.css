@@ -25682,23 +25682,27 @@ ion-navbar.toolbar {
   height: 100%;
 }
 
-.button-ios {
+.button-md {
   background-color: #59b200 !important;
 }
 
-.toolbar-background-ios {
+.toolbar-background-md {
   background-color: #8abd51 !important;
 }
 
-.toolbar-title-ios {
+.toolbar-title-md {
   color: #fff !important;
 }
 
-.bar-button-default-ios {
+.bar-button-default-md {
   color: #fff !important;
 }
 
-.segment-ios .segment-button {
+.segment-md .segment-button {
   color: #fff !important;
   border-color: #fff !important;
+}
+
+.toolbar-title-md {
+  padding: 0 45px !important;
 }

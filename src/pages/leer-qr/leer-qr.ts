@@ -40,35 +40,18 @@ export class LeerQrPage {
     this.options = {
       prompt: "Scan your barcode "
     }
-    this.barcodeScanner.scan(this.options).then((barcodeData) => {      
+    this.barcodeScanner.scan(this.options).then((barcodeData) => {
       var stringQR = barcodeData.text;
       var string1 = stringQR.split("CC - ");
       if (string1.length > 1) {
         this.identificacion = string1[1].split("ECO")[0];
-        let loader = this.cargando.create({
-          content: 'Validando QR...',
-        });
-        this.ecoticketsService.getInformacionQR(this.Evento.id, this.identificacion).subscribe(
-          (data: any) => { // Success
-            var informacionUsuarioA = JSON.parse(data._body);
-            if (JSON.stringify(informacionUsuarioA).length > 2) {
-              this.usuarioAsistente = informacionUsuarioA;
-              if (this.usuarioAsistente.esActivo == 0) {
-                this.estadoUsuario = '¡SI!,USUARIO PUEDE INGRESAR';
-              } else {
-                this.estadoUsuario = '¡NO!,USUARIO YA INGRESÓ';
-              }
-            } else {
-              this.estadoUsuario = 'USUARIO NO REGISTRADO';
-              this.usuarioAsistente = '';
-            }
-            loader.dismiss();
-          },
-          (error) => {
-            loader.dismiss();
-            console.error(error);
-          }
-        );
+        var respuesta = this.espin(this.identificacion);
+        if(respuesta){
+            console.log("es un pin");
+        }else{
+          this.ejecutarValidarYActivarQRServicio(this.Evento.id,this.identificacion)
+        }
+
       } else {
         this.estadoUsuario = 'QR NO VALIDO';
         this.usuarioAsistente = '';
@@ -78,10 +61,36 @@ export class LeerQrPage {
     });
   }
 
+  ejecutarValidarYActivarQRServicio(EventoId, identificacion) {
+    let loader = this.cargando.create({
+      content: 'Validando QR...',
+    });
+    this.ecoticketsService.ValidarYActivarQR(EventoId, identificacion).subscribe(
+      (data: any) => { // Success
+        var informacionUsuarioA = JSON.parse(data._body);
+        if (JSON.stringify(informacionUsuarioA).length > 2) {
+          if (informacionUsuarioA.usuario != null) {
+            this.usuarioAsistente = informacionUsuarioA.usuario
+          }
+          else {
+            this.usuarioAsistente = '';
+          }
+          this.estadoUsuario = informacionUsuarioA.respuestaActivacion;
+        }
+        console.error(informacionUsuarioA);
+        loader.dismiss();
+      },
+      (error) => {
+        loader.dismiss();
+        console.error(error);
+      }
+    );
+  }
+
   ActivarQR(idEvento, idAsistente) {
     this.ecoticketsService.ActivarQRUsuario(idEvento, idAsistente).subscribe(
       (data: any) => { // Success
-        this.estadoUsuario = data._body;        
+        this.estadoUsuario = data._body;
       },
       (error) => {
         console.error(error);
@@ -99,5 +108,16 @@ export class LeerQrPage {
     this.navCtrl.push(AsistentesActivosPage, {
       Evento: Evento
     });
+  }
+
+  espin(texto) {
+    var letras = "abcdefghyjklmnñopqrstuvwxyz";
+    texto = texto.toLowerCase();
+    for (var i = 0; i < texto.length; i++) {
+      if (letras.indexOf(texto.charAt(i), 0) != -1) {
+        return true;
+      }
+    }
+    return false;
   }
 }

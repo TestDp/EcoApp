@@ -7,8 +7,8 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title style="background-image: url('assets/imgs/favicon.png') !important; background-repeat: no-repeat; background-position-x: 23%;
-    background-position-y: 8px; background-size: 25px;">Usuarios Ingresados</ion-title>
+    <ion-title style="background-image: url('assets/imgs/favicon.png') !important; background-repeat: no-repeat;
+     background-size: 25px;">Usuarios</ion-title>
   </ion-navbar>
   <ion-toolbar no-border-top>
     <ion-segment [(ngModel)]="Usuarios">
@@ -22,24 +22,31 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
+
   <div [ngSwitch]="Usuarios">
     <ion-list *ngSwitchCase="'UsuariosRegistrados'">
       <ion-searchbar (ionInput)="getUsuariosRegistrados($event)"></ion-searchbar>
       <ion-grid>
-        <ion-row *ngFor="let asistente of ListaAsistentes.usuariosRegistrados"> 
+        <ion-row *ngFor="let asistente of ListaAsistentes.usuariosRegistrados">
           <ion-col col-4>{{asistente.Identificacion}}</ion-col>
-          <ion-col col-8>{{asistente.Nombres}} {{asistente.Apellidos}}</ion-col>
-        </ion-row>        
-      </ion-grid>     
+          <ion-col col-5>{{asistente.Nombres}} {{asistente.Apellidos}}</ion-col>
+          <ion-toggle checked="{{asistente.esActivo}}" (ionChange)="ActivarODesactivarUsuario(asistente)"></ion-toggle>
+          <!-- <ion-checkbox color="dark" checked="false"></ion-checkbox> -->
+        </ion-row>
+      </ion-grid>
+      <ion-infinite-scroll (ionInfinite)="doInfinite($event)">
+        <ion-infinite-scroll-content></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
     </ion-list>
     <ion-list *ngSwitchCase="'Asistentes'">
       <ion-searchbar (ionInput)="getAsistentes($event)"></ion-searchbar>
-       <ion-grid>
-        <ion-row *ngFor="let asistente of ListaAsistentes.Asistentes"> 
+      <ion-grid>
+        <ion-row *ngFor="let asistente of ListaAsistentes.Asistentes">
           <ion-col col-4>{{asistente.Identificacion}}</ion-col>
           <ion-col col-8>{{asistente.Nombres}} {{asistente.Apellidos}}</ion-col>
-        </ion-row>        
-      </ion-grid> 
+        </ion-row>
+      </ion-grid>
     </ion-list>
   </div>
+
 </ion-content>

@@ -45,7 +45,7 @@ var ListPage = (function () {
     };
     ListPage = ListPage_1 = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-list',template:/*ion-inline-start:"C:\Users\Diego\Documents\DPSoluciones\Proyectos\Ecotickets\EcoticketsAPP\trunk\src\pages\list\list.html"*/'<ion-header>\n  <ion-navbar>\n    <button ion-button menuToggle>\n      <ion-icon name="menu"></ion-icon>\n    </button>\n    <ion-title style="background-image: url(\'assets/imgs/favicon.png\') !important; background-repeat: no-repeat; background-position-x: 30%;\n    background-position-y: 8px; background-size: 25px;">Estadísticas</ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content>\n  <ion-list>\n    <button ion-item *ngFor="let item of items" (click)="itemTapped($event, item)">\n      <ion-icon [name]="item.icon" item-start></ion-icon>\n      {{item.title}}\n      <div class="item-note" item-end>\n        {{item.note}}\n      </div>\n    </button>\n  </ion-list>\n  <div *ngIf="selectedItem" padding>\n    You navigated here from <b>{{selectedItem.title}}</b>\n  </div>\n</ion-content>\n'/*ion-inline-end:"C:\Users\Diego\Documents\DPSoluciones\Proyectos\Ecotickets\EcoticketsAPP\trunk\src\pages\list\list.html"*/
+            selector: 'page-list',template:/*ion-inline-start:"C:\Users\LaPoint\Desktop\ecoapp\trunk\src\pages\list\list.html"*/'<ion-header>\n  <ion-navbar>\n    <button ion-button menuToggle>\n      <ion-icon name="menu"></ion-icon>\n    </button>\n    <ion-title style="background-image: url(\'assets/imgs/favicon.png\') !important; background-repeat: no-repeat;\n     background-size: 25px;">Estadísticas</ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content>\n  <ion-list>\n    <button ion-item *ngFor="let item of items" (click)="itemTapped($event, item)">\n      <ion-icon [name]="item.icon" item-start></ion-icon>\n      {{item.title}}\n      <div class="item-note" item-end>\n        {{item.note}}\n      </div>\n    </button>\n  </ion-list>\n  <div *ngIf="selectedItem" padding>\n    You navigated here from <b>{{selectedItem.title}}</b>\n  </div>\n</ion-content>\n'/*ion-inline-end:"C:\Users\LaPoint\Desktop\ecoapp\trunk\src\pages\list\list.html"*/
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */]])
     ], ListPage);
@@ -89,6 +89,7 @@ var AsistentesActivosPage = (function () {
         this.navParams = navParams;
         this.ecoticketsService = ecoticketsService;
         this.cargando = cargando;
+        this.indexInfiniteScroll = 10;
         this.Evento = navParams.get("Evento");
     }
     AsistentesActivosPage.prototype.ionViewDidLoad = function () {
@@ -99,6 +100,7 @@ var AsistentesActivosPage = (function () {
         loaderAsistentes.present().then(function () {
             _this.ecoticketsService.AsistentesActivos(_this.Evento.id).subscribe(function (data) {
                 _this.ListaAsistentes = JSON.parse(data._body);
+                _this.ListaAsistentes.usuariosRegistrados = _this.ListaAsistentes.usuariosRegistrados.slice(0, _this.indexInfiniteScroll);
                 _this.ListaAsistentesFiltro = JSON.parse(data._body);
                 loaderAsistentes.dismiss();
             }, function (error) {
@@ -117,6 +119,10 @@ var AsistentesActivosPage = (function () {
                 return (item.Nombres.toLowerCase().indexOf(val.toLowerCase()) > -1);
             });
         }
+        else {
+            this.indexInfiniteScroll = 10;
+            this.ListaAsistentes.usuariosRegistrados = this.ListaAsistentesFiltro.usuariosRegistrados.slice(0, this.indexInfiniteScroll);
+        }
     };
     AsistentesActivosPage.prototype.getAsistentes = function (ev) {
         this.ListaAsistentes.Asistentes = this.ListaAsistentesFiltro.Asistentes;
@@ -129,9 +135,53 @@ var AsistentesActivosPage = (function () {
             });
         }
     };
+    AsistentesActivosPage.prototype.ActivarODesactivarUsuario = function (Asistente) {
+        if (Asistente.esActivo)
+            this.DesactivarUsuario(Asistente);
+        else
+            this.ActivarUsuario(Asistente);
+    };
+    AsistentesActivosPage.prototype.ActivarUsuario = function (Asistente) {
+        var _this = this;
+        this.ecoticketsService.ActivarQRUsuario(this.Evento.id, Asistente.id).subscribe(function (data) {
+            Asistente.esActivo = true;
+            _this.ListaAsistentes.Asistentes.push(Asistente);
+        }, function (error) {
+            console.error(error);
+        });
+    };
+    AsistentesActivosPage.prototype.DesactivarUsuario = function (Asistente) {
+        var _this = this;
+        this.ecoticketsService.DesactivarQRUsuario(this.Evento.id, Asistente.id).subscribe(function (data) {
+            Asistente.esActivo = false;
+            var i = 0;
+            var index = 0;
+            _this.ListaAsistentes.Asistentes.forEach(function (asistenteArray) {
+                if (asistenteArray.id == Asistente.id) {
+                    index = i;
+                }
+                i++;
+            });
+            _this.ListaAsistentes.Asistentes.splice(index, 1);
+        }, function (error) {
+            console.error(error);
+        });
+    };
+    AsistentesActivosPage.prototype.doInfinite = function (infiniteScroll) {
+        var _this = this;
+        console.log('Begin async operation');
+        setTimeout(function () {
+            for (var i = 0; i < 30; i++) {
+                _this.ListaAsistentes.usuariosRegistrados.push(_this.ListaAsistentesFiltro.usuariosRegistrados[_this.indexInfiniteScroll]);
+                _this.indexInfiniteScroll++;
+            }
+            console.log('Async operation has ended');
+            infiniteScroll.complete();
+        }, 500);
+    };
     AsistentesActivosPage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-asistentes-activos',template:/*ion-inline-start:"C:\Users\Diego\Documents\DPSoluciones\Proyectos\Ecotickets\EcoticketsAPP\trunk\src\pages\asistentes-activos\asistentes-activos.html"*/'<!--\n  Generated template for the AsistentesActivosPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title style="background-image: url(\'assets/imgs/favicon.png\') !important; background-repeat: no-repeat; background-position-x: 23%;\n    background-position-y: 8px; background-size: 25px;">Usuarios Ingresados</ion-title>\n  </ion-navbar>\n  <ion-toolbar no-border-top>\n    <ion-segment [(ngModel)]="Usuarios">\n      <ion-segment-button value="UsuariosRegistrados">\n        Usarios Registrados\n      </ion-segment-button>\n      <ion-segment-button value="Asistentes">\n        Asistentes\n      </ion-segment-button>\n    </ion-segment>\n  </ion-toolbar>\n</ion-header>\n<ion-content>\n  <div [ngSwitch]="Usuarios">\n    <ion-list *ngSwitchCase="\'UsuariosRegistrados\'">\n      <ion-searchbar (ionInput)="getUsuariosRegistrados($event)"></ion-searchbar>\n      <ion-grid>\n        <ion-row *ngFor="let asistente of ListaAsistentes.usuariosRegistrados"> \n          <ion-col col-4>{{asistente.Identificacion}}</ion-col>\n          <ion-col col-8>{{asistente.Nombres}} {{asistente.Apellidos}}</ion-col>\n        </ion-row>        \n      </ion-grid>     \n    </ion-list>\n    <ion-list *ngSwitchCase="\'Asistentes\'">\n      <ion-searchbar (ionInput)="getAsistentes($event)"></ion-searchbar>\n       <ion-grid>\n        <ion-row *ngFor="let asistente of ListaAsistentes.Asistentes"> \n          <ion-col col-4>{{asistente.Identificacion}}</ion-col>\n          <ion-col col-8>{{asistente.Nombres}} {{asistente.Apellidos}}</ion-col>\n        </ion-row>        \n      </ion-grid> \n    </ion-list>\n  </div>\n</ion-content>'/*ion-inline-end:"C:\Users\Diego\Documents\DPSoluciones\Proyectos\Ecotickets\EcoticketsAPP\trunk\src\pages\asistentes-activos\asistentes-activos.html"*/,
+            selector: 'page-asistentes-activos',template:/*ion-inline-start:"C:\Users\LaPoint\Desktop\ecoapp\trunk\src\pages\asistentes-activos\asistentes-activos.html"*/'<!--\n  Generated template for the AsistentesActivosPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title style="background-image: url(\'assets/imgs/favicon.png\') !important; background-repeat: no-repeat;\n     background-size: 25px;">Usuarios</ion-title>\n  </ion-navbar>\n  <ion-toolbar no-border-top>\n    <ion-segment [(ngModel)]="Usuarios">\n      <ion-segment-button value="UsuariosRegistrados">\n        Usarios Registrados\n      </ion-segment-button>\n      <ion-segment-button value="Asistentes">\n        Asistentes\n      </ion-segment-button>\n    </ion-segment>\n  </ion-toolbar>\n</ion-header>\n<ion-content>\n\n  <div [ngSwitch]="Usuarios">\n    <ion-list *ngSwitchCase="\'UsuariosRegistrados\'">\n      <ion-searchbar (ionInput)="getUsuariosRegistrados($event)"></ion-searchbar>\n      <ion-grid>\n        <ion-row *ngFor="let asistente of ListaAsistentes.usuariosRegistrados">\n          <ion-col col-4>{{asistente.Identificacion}}</ion-col>\n          <ion-col col-5>{{asistente.Nombres}} {{asistente.Apellidos}}</ion-col>\n          <ion-toggle checked="{{asistente.esActivo}}" (ionChange)="ActivarODesactivarUsuario(asistente)"></ion-toggle>\n          <!-- <ion-checkbox color="dark" checked="false"></ion-checkbox> -->\n        </ion-row>\n      </ion-grid>\n      <ion-infinite-scroll (ionInfinite)="doInfinite($event)">\n        <ion-infinite-scroll-content></ion-infinite-scroll-content>\n      </ion-infinite-scroll>\n    </ion-list>\n    <ion-list *ngSwitchCase="\'Asistentes\'">\n      <ion-searchbar (ionInput)="getAsistentes($event)"></ion-searchbar>\n      <ion-grid>\n        <ion-row *ngFor="let asistente of ListaAsistentes.Asistentes">\n          <ion-col col-4>{{asistente.Identificacion}}</ion-col>\n          <ion-col col-8>{{asistente.Nombres}} {{asistente.Apellidos}}</ion-col>\n        </ion-row>\n      </ion-grid>\n    </ion-list>\n  </div>\n\n</ion-content>'/*ion-inline-end:"C:\Users\LaPoint\Desktop\ecoapp\trunk\src\pages\asistentes-activos\asistentes-activos.html"*/,
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */],
             __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */],
@@ -396,7 +446,7 @@ var EstadisticasPage = (function () {
     };
     EstadisticasPage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-estadisticas',template:/*ion-inline-start:"C:\Users\Diego\Documents\DPSoluciones\Proyectos\Ecotickets\EcoticketsAPP\trunk\src\pages\estadisticas\estadisticas.html"*/'<!--\n  Generated template for the EstadisticasPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title style="background-image: url(\'assets/imgs/favicon.png\') !important; background-repeat: no-repeat; background-position-x: 30%;\n    background-position-y: 8px; background-size: 25px;">Estadísticas</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n\n<ion-content padding>\n  <!-- <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <canvas id="canvasCantidadAsistentes"></canvas>\n        </ion-item>\n      </ion-col>\n    </ion-row> -->\n  <ion-card item-height="100%" >      \n      <ion-card-content>\n        <canvas id="canvasCantidadAsistentes" style="height:500px;width:100%"></canvas>\n      </ion-card-content>\n    </ion-card>\n    <ion-card>      \n      <ion-card-content>\n        <canvas id="canvasCiudadesAsistens" style="height:500px;width:100%"></canvas>\n      </ion-card-content>\n    </ion-card>\n    <ion-card>     \n      <ion-card-content>\n        <canvas id="canvasEdadesAsistentes" style="height:500px;width:100%"></canvas>\n      </ion-card-content>\n    </ion-card>\n    <ion-card>     \n      <ion-card-content>\n        <canvas id="canvasAsistentesXFecha" style="height:500px;width:100%"></canvas>\n      </ion-card-content>\n    </ion-card>\n    <ion-card>      \n      <ion-card-content>\n        <canvas id="canvasJuntAsistens" style="height:550px;width:100%"></canvas>\n      </ion-card-content>\n    </ion-card>\n</ion-content>\n'/*ion-inline-end:"C:\Users\Diego\Documents\DPSoluciones\Proyectos\Ecotickets\EcoticketsAPP\trunk\src\pages\estadisticas\estadisticas.html"*/,
+            selector: 'page-estadisticas',template:/*ion-inline-start:"C:\Users\LaPoint\Desktop\ecoapp\trunk\src\pages\estadisticas\estadisticas.html"*/'<!--\n  Generated template for the EstadisticasPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title style="background-image: url(\'assets/imgs/favicon.png\') !important; background-repeat: no-repeat;\n     background-size: 25px;">Estadísticas</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n\n<ion-content padding>\n  <!-- <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <canvas id="canvasCantidadAsistentes"></canvas>\n        </ion-item>\n      </ion-col>\n    </ion-row> -->\n  <ion-card item-height="100%" >      \n      <ion-card-content>\n        <canvas id="canvasCantidadAsistentes" style="height:500px;width:100%"></canvas>\n      </ion-card-content>\n    </ion-card>\n    <ion-card>      \n      <ion-card-content>\n        <canvas id="canvasCiudadesAsistens" style="height:500px;width:100%"></canvas>\n      </ion-card-content>\n    </ion-card>\n    <ion-card>     \n      <ion-card-content>\n        <canvas id="canvasEdadesAsistentes" style="height:500px;width:100%"></canvas>\n      </ion-card-content>\n    </ion-card>\n    <ion-card>     \n      <ion-card-content>\n        <canvas id="canvasAsistentesXFecha" style="height:500px;width:100%"></canvas>\n      </ion-card-content>\n    </ion-card>\n    <ion-card>      \n      <ion-card-content>\n        <canvas id="canvasJuntAsistens" style="height:550px;width:100%"></canvas>\n      </ion-card-content>\n    </ion-card>\n</ion-content>\n'/*ion-inline-end:"C:\Users\LaPoint\Desktop\ecoapp\trunk\src\pages\estadisticas\estadisticas.html"*/,
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */],
             __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */],
@@ -464,29 +514,13 @@ var LeerQrPage = (function () {
             var string1 = stringQR.split("CC - ");
             if (string1.length > 1) {
                 _this.identificacion = string1[1].split("ECO")[0];
-                var loader_1 = _this.cargando.create({
-                    content: 'Validando QR...',
-                });
-                _this.ecoticketsService.getInformacionQR(_this.Evento.id, _this.identificacion).subscribe(function (data) {
-                    var informacionUsuarioA = JSON.parse(data._body);
-                    if (JSON.stringify(informacionUsuarioA).length > 2) {
-                        _this.usuarioAsistente = informacionUsuarioA;
-                        if (_this.usuarioAsistente.esActivo == 0) {
-                            _this.estadoUsuario = '¡SI!,USUARIO PUEDE INGRESAR';
-                        }
-                        else {
-                            _this.estadoUsuario = '¡NO!,USUARIO YA INGRESÓ';
-                        }
-                    }
-                    else {
-                        _this.estadoUsuario = 'USUARIO NO REGISTRADO';
-                        _this.usuarioAsistente = '';
-                    }
-                    loader_1.dismiss();
-                }, function (error) {
-                    loader_1.dismiss();
-                    console.error(error);
-                });
+                var respuesta = _this.espin(_this.identificacion);
+                if (respuesta) {
+                    console.log("es un pin");
+                }
+                else {
+                    _this.ejecutarValidarYActivarQRServicio(_this.Evento.id, _this.identificacion);
+                }
             }
             else {
                 _this.estadoUsuario = 'QR NO VALIDO';
@@ -494,6 +528,29 @@ var LeerQrPage = (function () {
             }
         }, function (err) {
             console.log("Error occured : " + err);
+        });
+    };
+    LeerQrPage.prototype.ejecutarValidarYActivarQRServicio = function (EventoId, identificacion) {
+        var _this = this;
+        var loader = this.cargando.create({
+            content: 'Validando QR...',
+        });
+        this.ecoticketsService.ValidarYActivarQR(EventoId, identificacion).subscribe(function (data) {
+            var informacionUsuarioA = JSON.parse(data._body);
+            if (JSON.stringify(informacionUsuarioA).length > 2) {
+                if (informacionUsuarioA.usuario != null) {
+                    _this.usuarioAsistente = informacionUsuarioA.usuario;
+                }
+                else {
+                    _this.usuarioAsistente = '';
+                }
+                _this.estadoUsuario = informacionUsuarioA.respuestaActivacion;
+            }
+            console.error(informacionUsuarioA);
+            loader.dismiss();
+        }, function (error) {
+            loader.dismiss();
+            console.error(error);
         });
     };
     LeerQrPage.prototype.ActivarQR = function (idEvento, idAsistente) {
@@ -514,9 +571,19 @@ var LeerQrPage = (function () {
             Evento: Evento
         });
     };
+    LeerQrPage.prototype.espin = function (texto) {
+        var letras = "abcdefghyjklmnñopqrstuvwxyz";
+        texto = texto.toLowerCase();
+        for (var i = 0; i < texto.length; i++) {
+            if (letras.indexOf(texto.charAt(i), 0) != -1) {
+                return true;
+            }
+        }
+        return false;
+    };
     LeerQrPage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-leer-qr',template:/*ion-inline-start:"C:\Users\Diego\Documents\DPSoluciones\Proyectos\Ecotickets\EcoticketsAPP\trunk\src\pages\leer-qr\leer-qr.html"*/'<!--\n  Generated template for the LeerQrPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n  <ion-navbar>\n    <ion-title style="background-image: url(\'assets/imgs/favicon.png\') !important; background-repeat: no-repeat; background-position-x: 20%;\n    background-position-y: 8px; background-size: 25px;">Información del Evento</ion-title>\n  </ion-navbar>\n</ion-header>\n\n\n<ion-content padding>\n   <ion-card>\n    <img src="{{Evento.UrlflayerEvento}}"/>  \n      <ion-card-title>\n      {{Evento.Nombre_Evento}}\n      </ion-card-title>\n    <div class="card-subtitle">Lugar:{{Evento.Lugar_Evento }}</div>\n    <div class="card-subtitle">fecha:{{Evento.Fecha_Evento }}</div>\n    <ion-grid *ngIf="usuarioAsistente">\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Nombre: {{usuarioAsistente.Nombres}} </ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Apellidos: {{usuarioAsistente.Apellidos}} </ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Identificación: {{usuarioAsistente.Identificacion}} </ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Estado: {{estadoUsuario}}</ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n    <button ion-button (click)="ActivarQR(Evento.id,usuarioAsistente.id)">Activar QR</button>\n  </ion-grid>\n  <ion-grid *ngIf="!usuarioAsistente && estadoUsuario">\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>{{estadoUsuario}}</ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n  </ion-card>\n  <!-- <ion-row>\n    <ion-col col-12>\n      <ion-item>\n        <ion-label>Evento:{{Evento.Nombre_Evento}} </ion-label>\n      </ion-item>\n    </ion-col>\n  </ion-row>\n  <ion-row>\n    <ion-col col-12>\n      <ion-item>\n        <ion-label>Lugar:{{Evento.Lugar_Evento }} </ion-label>\n      </ion-item>\n    </ion-col>\n  </ion-row>\n  <ion-row>\n    <ion-col col-12>\n      <ion-item>\n        <ion-label>fecha:{{Evento.Fecha_Evento }} </ion-label>\n      </ion-item>\n    </ion-col>\n  </ion-row> -->\n  <!-- <ion-grid *ngIf="usuarioAsistente">\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Nombre: {{usuarioAsistente.Nombres}} </ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Apellidos: {{usuarioAsistente.Apellidos}} </ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Identificación: {{usuarioAsistente.Identificacion}} </ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Estado: {{estadoUsuario}}</ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n    <button ion-button (click)="ActivarQR(Evento.id,usuarioAsistente.id)">Activar QR</button>\n  </ion-grid>\n  <ion-grid *ngIf="!usuarioAsistente && estadoUsuario">\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>{{estadoUsuario}}</ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n  </ion-grid> -->\n</ion-content>\n\n<ion-footer no-border>\n  <ion-toolbar>\n    <ion-segment>\n      <ion-segment-button style="color: black;" (click)="UsuariosActivos(Evento)" value="ingresos">\n        <ion-icon name="list-box"></ion-icon>\n      </ion-segment-button>\n      <ion-segment-button style="color: black;" (click)="scan()" value="esccanear">\n        <ion-icon name="qr-scanner"></ion-icon>\n      </ion-segment-button>\n      <ion-segment-button style="color: black;" (click)="Estadisticas(Evento)" value="estadisticas">\n        <ion-icon name="stats"></ion-icon>\n      </ion-segment-button>\n    </ion-segment>\n  </ion-toolbar>\n</ion-footer>'/*ion-inline-end:"C:\Users\Diego\Documents\DPSoluciones\Proyectos\Ecotickets\EcoticketsAPP\trunk\src\pages\leer-qr\leer-qr.html"*/,
+            selector: 'page-leer-qr',template:/*ion-inline-start:"C:\Users\LaPoint\Desktop\ecoapp\trunk\src\pages\leer-qr\leer-qr.html"*/'<!--\n  Generated template for the LeerQrPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n  <ion-navbar>\n    <ion-title style="background-image: url(\'assets/imgs/favicon.png\') !important; background-repeat: no-repeat;\n     background-size: 25px;">Información del Evento</ion-title>\n  </ion-navbar>\n</ion-header>\n\n\n<ion-content padding>\n   <ion-card>\n    <img src="{{Evento.UrlflayerEvento}}"/>  \n      <ion-card-title>\n      {{Evento.Nombre_Evento}}\n      </ion-card-title>\n    <div class="card-subtitle">Lugar:{{Evento.Lugar_Evento }}</div>\n    <div class="card-subtitle">fecha:{{Evento.Fecha_Evento }}</div>\n    <ion-grid *ngIf="usuarioAsistente">\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Nombre: {{usuarioAsistente.Nombres}} </ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Apellidos: {{usuarioAsistente.Apellidos}} </ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Identificación: {{usuarioAsistente.Identificacion}} </ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Estado: {{estadoUsuario}}</ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>   \n  </ion-grid>\n  <ion-grid *ngIf="!usuarioAsistente && estadoUsuario">\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>{{estadoUsuario}}</ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n  </ion-card>\n  <!-- <ion-row>\n    <ion-col col-12>\n      <ion-item>\n        <ion-label>Evento:{{Evento.Nombre_Evento}} </ion-label>\n      </ion-item>\n    </ion-col>\n  </ion-row>\n  <ion-row>\n    <ion-col col-12>\n      <ion-item>\n        <ion-label>Lugar:{{Evento.Lugar_Evento }} </ion-label>\n      </ion-item>\n    </ion-col>\n  </ion-row>\n  <ion-row>\n    <ion-col col-12>\n      <ion-item>\n        <ion-label>fecha:{{Evento.Fecha_Evento }} </ion-label>\n      </ion-item>\n    </ion-col>\n  </ion-row> -->\n  <!-- <ion-grid *ngIf="usuarioAsistente">\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Nombre: {{usuarioAsistente.Nombres}} </ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Apellidos: {{usuarioAsistente.Apellidos}} </ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Identificación: {{usuarioAsistente.Identificacion}} </ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Estado: {{estadoUsuario}}</ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n    <button ion-button (click)="ActivarQR(Evento.id,usuarioAsistente.id)">Activar QR</button>\n  </ion-grid>\n  <ion-grid *ngIf="!usuarioAsistente && estadoUsuario">\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>{{estadoUsuario}}</ion-label>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n  </ion-grid> -->\n</ion-content>\n\n<ion-footer no-border>\n  <ion-toolbar>\n    <ion-segment>\n      <ion-segment-button style="color: black;" (click)="UsuariosActivos(Evento)" value="ingresos">\n        <ion-icon name="list-box"></ion-icon>\n      </ion-segment-button>\n      <ion-segment-button style="color: black;" (click)="scan()" value="esccanear">\n        <ion-icon name="qr-scanner"></ion-icon>\n      </ion-segment-button>\n      <ion-segment-button style="color: black;" (click)="Estadisticas(Evento)" value="estadisticas">\n        <ion-icon name="stats"></ion-icon>\n      </ion-segment-button>\n    </ion-segment>\n  </ion-toolbar>\n</ion-footer>'/*ion-inline-end:"C:\Users\LaPoint\Desktop\ecoapp\trunk\src\pages\leer-qr\leer-qr.html"*/,
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */],
             __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */],
@@ -663,7 +730,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var EcoticketsServiceProvider = (function () {
     function EcoticketsServiceProvider(http) {
         this.http = http;
-        this.url = 'http://pruebas.ecotickets.co';
+        //url:string = 'http://pruebas.ecotickets.co';
+        this.url = 'http://ecotickets.co';
         console.log('Hello EcoticketsServiceProvider Provider');
     }
     EcoticketsServiceProvider.prototype.getCiudades = function () {
@@ -695,6 +763,16 @@ var EcoticketsServiceProvider = (function () {
         var headers = new __WEBPACK_IMPORTED_MODULE_1__angular_http__["a" /* Headers */]({ 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT' });
         var options = new __WEBPACK_IMPORTED_MODULE_1__angular_http__["d" /* RequestOptions */]({ headers: headers });
         return this.http.get(this.url + '/ActivarQRApp/' + idEvento + '/' + idAsistente, options);
+    };
+    EcoticketsServiceProvider.prototype.DesactivarQRUsuario = function (idEvento, idAsistente) {
+        var headers = new __WEBPACK_IMPORTED_MODULE_1__angular_http__["a" /* Headers */]({ 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT' });
+        var options = new __WEBPACK_IMPORTED_MODULE_1__angular_http__["d" /* RequestOptions */]({ headers: headers });
+        return this.http.get(this.url + '/DesactivarQRApp/' + idEvento + '/' + idAsistente, options);
+    };
+    EcoticketsServiceProvider.prototype.ValidarYActivarQR = function (idEvento, cc) {
+        var headers = new __WEBPACK_IMPORTED_MODULE_1__angular_http__["a" /* Headers */]({ 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT' });
+        var options = new __WEBPACK_IMPORTED_MODULE_1__angular_http__["d" /* RequestOptions */]({ headers: headers });
+        return this.http.get(this.url + '/ValidarYActivarQR/' + idEvento + '/' + cc, options);
     };
     EcoticketsServiceProvider.prototype.CantidadAsistentesEsperadosRegistrados = function (idEvento) {
         var headers = new __WEBPACK_IMPORTED_MODULE_1__angular_http__["a" /* Headers */]({ 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT' });
@@ -1203,7 +1281,7 @@ var MyApp = (function () {
         __metadata("design:type", __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* Nav */])
     ], MyApp.prototype, "nav", void 0);
     MyApp = __decorate([
-        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"C:\Users\Diego\Documents\DPSoluciones\Proyectos\Ecotickets\EcoticketsAPP\trunk\src\app\app.html"*/'<ion-menu [content]="content">\n  <ion-header>\n    <ion-toolbar>\n      <ion-title>Menu</ion-title>\n    </ion-toolbar>\n  </ion-header>\n\n  <ion-content>\n    <ion-list>\n      <button menuClose ion-item *ngFor="let p of pages" (click)="openPage(p)">\n        {{p.title}}\n      </button>\n      <button menuClose ion-item *ngFor="let p of pagesCerrarSesion" (click)="cerrarSesion(p)">\n        {{p.title}}\n      </button>\n    </ion-list>\n  </ion-content>\n\n</ion-menu>\n\n<!-- Disable swipe-to-go-back because it\'s poor UX to combine STGB with side menus -->\n<ion-nav [root]="rootPage" #content swipeBackEnabled="false"></ion-nav>'/*ion-inline-end:"C:\Users\Diego\Documents\DPSoluciones\Proyectos\Ecotickets\EcoticketsAPP\trunk\src\app\app.html"*/
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"C:\Users\LaPoint\Desktop\ecoapp\trunk\src\app\app.html"*/'<ion-menu [content]="content">\n  <ion-header>\n    <ion-toolbar>\n      <ion-title>Menu</ion-title>\n    </ion-toolbar>\n  </ion-header>\n\n  <ion-content>\n    <ion-list>\n      <button menuClose ion-item *ngFor="let p of pages" (click)="openPage(p)">\n        {{p.title}}\n      </button>\n      <button menuClose ion-item *ngFor="let p of pagesCerrarSesion" (click)="cerrarSesion(p)">\n        {{p.title}}\n      </button>\n    </ion-list>\n  </ion-content>\n\n</ion-menu>\n\n<!-- Disable swipe-to-go-back because it\'s poor UX to combine STGB with side menus -->\n<ion-nav [root]="rootPage" #content swipeBackEnabled="false"></ion-nav>'/*ion-inline-end:"C:\Users\LaPoint\Desktop\ecoapp\trunk\src\app\app.html"*/
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["j" /* Platform */],
             __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__["a" /* StatusBar */],
@@ -1359,7 +1437,7 @@ var HomePage = (function () {
     };
     HomePage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-home',template:/*ion-inline-start:"C:\Users\Diego\Documents\DPSoluciones\Proyectos\Ecotickets\EcoticketsAPP\trunk\src\pages\home\home.html"*/'<ion-header>\n  <ion-navbar>\n    <button ion-button menuToggle>\n      <ion-icon name="menu"></ion-icon>\n    </button>      \n    <ion-title style="background-image: url(\'assets/imgs/favicon.png\') !important; background-repeat: no-repeat; background-position-x: 30%;\n    background-position-y: 8px; background-size: 25px;">{{usuario.name}}</ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n<ion-col col-12>\n	<ion-img width="170" height="75"  style="background-color:#fff; margin-left:20%;" src="assets/imgs/logo.png"></ion-img>\n	 </ion-col>\n  <ion-list>\n    <button ion-item *ngFor="let item of ListaEventos" (click)="LeerQR($event, item)">\n      <ion-icon [name]="item.icon" item-start></ion-icon>      \n      <div class="item-note" item-end>\n        {{item.Nombre_Evento}}\n      </div>\n       \n    </button>\n  </ion-list>\n\n <!-- <button ion-button secondary menuToggle>Toggle Menu</button>-->\n</ion-content>\n'/*ion-inline-end:"C:\Users\Diego\Documents\DPSoluciones\Proyectos\Ecotickets\EcoticketsAPP\trunk\src\pages\home\home.html"*/
+            selector: 'page-home',template:/*ion-inline-start:"C:\Users\LaPoint\Desktop\ecoapp\trunk\src\pages\home\home.html"*/'<ion-header>\n  <ion-navbar>\n    <button ion-button menuToggle>\n      <ion-icon name="menu"></ion-icon>\n    </button>      \n    <ion-title style="background-image: url(\'assets/imgs/favicon.png\') !important; background-repeat: no-repeat;\n     background-size: 25px;">{{usuario.name}}</ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n<ion-col col-12>\n	<ion-img width="170" height="75"  style="background-color:#fff; margin-left:20%;" src="assets/imgs/logo.png"></ion-img>\n	 </ion-col>\n  <ion-list>\n    <button ion-item *ngFor="let item of ListaEventos" (click)="LeerQR($event, item)">\n      <ion-icon [name]="item.icon" item-start></ion-icon>      \n      <div class="item-note" item-end>\n        {{item.Nombre_Evento}}\n      </div>\n       \n    </button>\n  </ion-list>\n\n <!-- <button ion-button secondary menuToggle>Toggle Menu</button>-->\n</ion-content>\n'/*ion-inline-end:"C:\Users\LaPoint\Desktop\ecoapp\trunk\src\pages\home\home.html"*/
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */],
             __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */],
@@ -1452,7 +1530,7 @@ var LoginPage = (function () {
     ], LoginPage.prototype, "nav", void 0);
     LoginPage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-login',template:/*ion-inline-start:"C:\Users\Diego\Documents\DPSoluciones\Proyectos\Ecotickets\EcoticketsAPP\trunk\src\pages\login\login.html"*/'<!--\n  Generated template for the LoginPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n     <ion-title style="background-image: url(\'assets/imgs/favicon.png\') !important; background-repeat: no-repeat; background-position-x: 30%;\n    background-position-y: 5px; background-size: 25px;">\n      Iniciar Sesión\n\n    </ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n<ion-content padding>\n  <ion-grid>\n    <ion-row>\n	<ion-col col-12>\n	<ion-img width="170" height="75"  style="background-color:#fff; margin-left:20%;" src="assets/imgs/logo.png"></ion-img>\n	 </ion-col>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Usuario</ion-label>\n          <ion-input [(ngModel)]="usuario" type="text" value=""></ion-input>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Contraseña</ion-label>\n          <ion-input [(ngModel)]="password" type="password"></ion-input>\n        </ion-item>\n      </ion-col>\n    </ion-row>        \n    <button ion-button (click)="login()">Ingresar</button>    \n  </ion-grid>\n  \n</ion-content>'/*ion-inline-end:"C:\Users\Diego\Documents\DPSoluciones\Proyectos\Ecotickets\EcoticketsAPP\trunk\src\pages\login\login.html"*/,
+            selector: 'page-login',template:/*ion-inline-start:"C:\Users\LaPoint\Desktop\ecoapp\trunk\src\pages\login\login.html"*/'<!--\n  Generated template for the LoginPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n     <ion-title style="background-image: url(\'assets/imgs/favicon.png\') !important; background-repeat: no-repeat;\n     background-size: 25px;">\n      Iniciar Sesión\n\n    </ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n<ion-content padding>\n  <ion-grid>\n    <ion-row>\n	<ion-col col-12>\n	<ion-img width="170" height="75"  style="background-color:#fff; margin-left:20%;" src="assets/imgs/logo.png"></ion-img>\n	 </ion-col>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Usuario</ion-label>\n          <ion-input [(ngModel)]="usuario" type="text" value=""></ion-input>\n        </ion-item>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-item>\n          <ion-label>Contraseña</ion-label>\n          <ion-input [(ngModel)]="password" type="password"></ion-input>\n        </ion-item>\n      </ion-col>\n    </ion-row>        \n    <button ion-button (click)="login()">Ingresar</button>    \n  </ion-grid>\n  \n</ion-content>'/*ion-inline-end:"C:\Users\LaPoint\Desktop\ecoapp\trunk\src\pages\login\login.html"*/,
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */],
             __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */],

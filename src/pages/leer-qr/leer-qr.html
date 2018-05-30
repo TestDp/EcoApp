@@ -6,8 +6,8 @@
 -->
 <ion-header>
   <ion-navbar>
-    <ion-title style="background-image: url('assets/imgs/favicon.png') !important; background-repeat: no-repeat; background-position-x: 20%;
-    background-position-y: 8px; background-size: 25px;">Información del Evento</ion-title>
+    <ion-title style="background-image: url('assets/imgs/favicon.png') !important; background-repeat: no-repeat;
+     background-size: 25px;">Información del Evento</ion-title>
   </ion-navbar>
 </ion-header>
 
@@ -48,8 +48,7 @@
           <ion-label>Estado: {{estadoUsuario}}</ion-label>
         </ion-item>
       </ion-col>
-    </ion-row>
-    <button ion-button (click)="ActivarQR(Evento.id,usuarioAsistente.id)">Activar QR</button>
+    </ion-row>   
   </ion-grid>
   <ion-grid *ngIf="!usuarioAsistente && estadoUsuario">
     <ion-row>
