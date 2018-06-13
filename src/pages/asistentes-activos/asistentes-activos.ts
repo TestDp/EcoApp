@@ -36,7 +36,7 @@ export class AsistentesActivosPage {
         (data: any) => { // Success
           this.ListaAsistentes = JSON.parse(data._body);
           this.ListaAsistentes.usuariosRegistrados = this.ListaAsistentes.usuariosRegistrados.slice(0, this.indexInfiniteScroll);
-          this.ListaAsistentesFiltro = JSON.parse(data._body);         
+          this.ListaAsistentesFiltro = JSON.parse(data._body);
           loaderAsistentes.dismiss();
         },
         (error) => {
@@ -56,7 +56,7 @@ export class AsistentesActivosPage {
       this.ListaAsistentes.usuariosRegistrados = this.ListaAsistentes.usuariosRegistrados.filter((item) => {
         return (item.Nombres.toLowerCase().indexOf(val.toLowerCase()) > -1);
       });
-    } 
+    }
     else {
       this.indexInfiniteScroll = 10;
       this.ListaAsistentes.usuariosRegistrados = this.ListaAsistentesFiltro.usuariosRegistrados.slice(0, this.indexInfiniteScroll);
@@ -115,17 +115,16 @@ export class AsistentesActivosPage {
   }
 
   doInfinite(infiniteScroll) {
-    console.log('Begin async operation');
 
     setTimeout(() => {
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 20; i++) {
+        if (this.ListaAsistentesFiltro.usuariosRegistrados.length <= this.indexInfiniteScroll)
+          break
         this.ListaAsistentes.usuariosRegistrados.push(this.ListaAsistentesFiltro.usuariosRegistrados[this.indexInfiniteScroll]);
         this.indexInfiniteScroll++;
       }
-
-      console.log('Async operation has ended');
       infiniteScroll.complete();
     }, 500);
   }
-  
+
 }

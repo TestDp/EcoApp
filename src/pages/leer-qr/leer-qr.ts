@@ -47,13 +47,14 @@ export class LeerQrPage {
         this.identificacion = string1[1].split("ECO")[0];
         var respuesta = this.espin(this.identificacion);
         if(respuesta){
-            console.log("es un pin");
+            this.ejecutarActivarPinServicio(this.Evento.id, this.identificacion)
+            console.log("es pin: "+this.identificacion);
         }else{
           this.ejecutarValidarYActivarQRServicio(this.Evento.id,this.identificacion)
         }
 
       } else {
-        this.estadoUsuario = 'QR NO VALIDO';
+        this.estadoUsuario = 'QR/Boleta NO VALIDO';
         this.usuarioAsistente = '';
       }
     }, (err) => {
@@ -78,6 +79,26 @@ export class LeerQrPage {
           this.estadoUsuario = informacionUsuarioA.respuestaActivacion;
         }
         console.error(informacionUsuarioA);
+        loader.dismiss();
+      },
+      (error) => {
+        loader.dismiss();
+        console.error(error);
+      }
+    );
+  }
+
+  ejecutarActivarPinServicio(EventoId, Pin) {
+    let loader = this.cargando.create({
+      content: 'Validando Boleta...',
+    });
+    this.ecoticketsService.ActivarPinBoleta(EventoId, Pin).subscribe(
+      (data: any) => { // Success
+        var informacionUsuarioA = data._body;
+        if (informacionUsuarioA !='') {          
+          this.usuarioAsistente = '';
+          this.estadoUsuario = informacionUsuarioA;
+        }        
         loader.dismiss();
       },
       (error) => {
